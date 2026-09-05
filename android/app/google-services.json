@@ -12,7 +12,12 @@
           "package_name": "com.almnar.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "204348543059-45hh87lavodqg0eg4in0ot496dgu2nai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDNqjERpooYgI2Q2Qno4sM7BuGQhKPLuhc"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "204348543059-45hh87lavodqg0eg4in0ot496dgu2nai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
