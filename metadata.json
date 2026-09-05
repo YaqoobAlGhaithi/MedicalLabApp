@@ -1,0 +1,6 @@
+{
+  "name": "Al-Manar Lab Report Pro",
+  "description": "نظام إدارة تقارير المختبرات الطبية لعيادة ومختبرات المنار الطبية مع محرك تصدير تقارير PDF مطابقة للمواصفات الطبية",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

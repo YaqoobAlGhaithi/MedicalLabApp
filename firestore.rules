@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'axm88125@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Connection testing endpoint
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Admin collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Laboratory Reports
+    function isValidReport(data) {
+      return data.labNumber is string && data.labNumber.size() <= 100 &&
+             data.patientName is string && data.patientName.size() <= 200 &&
+             data.patientAge is number &&
+             data.patientSex in ['M', 'F'] &&
+             data.doctorName is string && data.doctorName.size() <= 200 &&
+             data.status in ['completed', 'pending', 'draft'];
+    }
+
+    match /reports/{reportId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(reportId) && isValidReport(incoming());
+      allow update: if isSignedIn() && isValidId(reportId) && isValidReport(incoming());
+      allow delete: if isSignedIn() && isValidId(reportId);
+    }
+
+    // Patients Directory
+    function isValidPatient(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.age is number &&
+             data.sex in ['M', 'F'];
+    }
+
+    match /patients/{patientId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(patientId) && isValidPatient(incoming());
+      allow update: if isSignedIn() && isValidId(patientId) && isValidPatient(incoming());
+      allow delete: if isSignedIn() && isValidId(patientId);
+    }
+
+    // Doctors Directory
+    function isValidDoctor(data) {
+      return data.name is string && data.name.size() <= 200;
+    }
+
+    match /doctors/{doctorId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(doctorId) && isValidDoctor(incoming());
+      allow update: if isSignedIn() && isValidId(doctorId) && isValidDoctor(incoming());
+      allow delete: if isSignedIn() && isValidId(doctorId);
+    }
+
+    // Clinic Settings
+    function isValidSettings(data) {
+      return data.labNameAr is string && data.labNameAr.size() <= 200 &&
+             data.labNameEn is string && data.labNameEn.size() <= 200;
+    }
+
+    match /settings/{settingId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(settingId) && isValidSettings(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}

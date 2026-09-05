@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AlManar Lab</string>
+    <string name="title_activity_main">AlManar Lab</string>
+    <string name="package_name">com.almnar.app</string>
+    <string name="custom_url_scheme">com.almnar.app</string>
+</resources>

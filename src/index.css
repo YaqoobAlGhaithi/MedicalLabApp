@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Android WebView & Universal Browser Color Compatibility Layer
+   Prevents "Attempting to parse an unsupported color function" errors
+   ========================================================================== */
+
+:root {
+  --almanar-navy: #0b3b8c;
+  --almanar-navy-dark: #002e5b;
+  --almanar-navy-light: #e0f2fe;
+  --almanar-emerald: #10b981;
+  --almanar-red: #ef4444;
+  --almanar-amber: #f59e0b;
+}
+
+/* ==========================================================================
+   Professional Medical Report Print Engine for Android PrintManager & Web
+   ========================================================================== */
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    font-size: 11pt !important;
+    line-height: 1.3 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Exclude all navigational controls, bottom navs, sidebars, floating buttons */
+  header,
+  nav,
+  aside,
+  button,
+  input,
+  select,
+  .no-print,
+  .print-hidden,
+  .mobile-nav,
+  .sidebar-drawer,
+  [data-print-ignore="true"] {
+    display: none !important;
+  }
+
+  /* Ensure medical report prints with complete backgrounds and sharp borders */
+  .official-report-sheet,
+  [data-printable-report="true"] {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 12mm !important;
+    background: #ffffff !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .official-report-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+}

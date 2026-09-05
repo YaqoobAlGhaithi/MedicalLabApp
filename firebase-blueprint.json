@@ -1,0 +1,141 @@
+{
+  "entities": {
+    "LabReport": {
+      "title": "LabReport",
+      "description": "Medical laboratory test report and patient diagnostic results",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique report identifier"
+        },
+        "labNumber": {
+          "type": "string",
+          "description": "Sequential laboratory case number (e.g. LAB-000532)"
+        },
+        "patientName": {
+          "type": "string",
+          "description": "Full name of the patient"
+        },
+        "patientAge": {
+          "type": "number",
+          "description": "Age of the patient"
+        },
+        "patientSex": {
+          "type": "string",
+          "enum": ["M", "F"],
+          "description": "Sex of the patient"
+        },
+        "doctorName": {
+          "type": "string",
+          "description": "Referring doctor name"
+        },
+        "reportDate": {
+          "type": "string",
+          "description": "Date of laboratory analysis"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "pending", "draft"],
+          "description": "Report workflow status"
+        }
+      },
+      "required": ["labNumber", "patientName", "patientAge", "patientSex", "doctorName", "reportDate", "status"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "Registered patient profile records",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique patient ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Patient full legal name"
+        },
+        "age": {
+          "type": "number",
+          "description": "Patient age in years"
+        },
+        "sex": {
+          "type": "string",
+          "enum": ["M", "F"],
+          "description": "Biological sex"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Patient contact number"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date record was created"
+        }
+      },
+      "required": ["name", "age", "sex"]
+    },
+    "Doctor": {
+      "title": "Doctor",
+      "description": "Referring medical physician",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Doctor identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Doctor full name with title"
+        },
+        "specialty": {
+          "type": "string",
+          "description": "Medical specialty"
+        }
+      },
+      "required": ["name"]
+    },
+    "LabSettings": {
+      "title": "LabSettings",
+      "description": "Clinic and laboratory metadata, headers and print preferences",
+      "type": "object",
+      "properties": {
+        "labNameAr": {
+          "type": "string",
+          "description": "Arabic clinic name"
+        },
+        "labNameEn": {
+          "type": "string",
+          "description": "English clinic name"
+        },
+        "phone1": {
+          "type": "string",
+          "description": "Primary phone"
+        },
+        "address": {
+          "type": "string",
+          "description": "Lab physical location"
+        }
+      },
+      "required": ["labNameAr", "labNameEn"]
+    }
+  },
+  "firestore": {
+    "/reports/{reportId}": {
+      "schema": "LabReport",
+      "description": "Collection of patient lab examination reports"
+    },
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Directory of registered clinic patients"
+    },
+    "/doctors/{doctorId}": {
+      "schema": "Doctor",
+      "description": "Directory of referring doctors"
+    },
+    "/settings/{settingId}": {
+      "schema": "LabSettings",
+      "description": "Laboratory configurations and print headers"
+    }
+  }
+}

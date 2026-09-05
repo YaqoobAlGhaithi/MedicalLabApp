@@ -1,0 +1,18 @@
+{
+  "reports": [
+    {
+      "id": "rep_sample_test",
+      "labNumber": "LAB-001001",
+      "patientName": "فهد خالد الصالح",
+      "patientAge": 34,
+      "patientSex": "M",
+      "doctorName": "د. سارة المنصوري",
+      "reportDate": "2026-09-02",
+      "status": "completed",
+      "createdAt": "2026-09-02T22:16:27.567Z",
+      "updatedAt": "2026-09-02T22:16:27.567Z"
+    }
+  ],
+  "patients": [],
+  "printJobs": []
+}
