@@ -7,7 +7,7 @@
 ## 🌳 1. المخطط الشجري للمشروع (Project Directory Tree)
 
 ```text
-almanar-medical-lims/
+MedicalLabApp/
 ├── .github/
 │   └── workflows/
 │       └── android-build.yml        # مسار عمل GitHub Actions لبناء تطبيق الأندرويد APK

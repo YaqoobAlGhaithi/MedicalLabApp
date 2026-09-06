@@ -10,7 +10,7 @@
 |_________________________________________________________________________|
 ```
 
-[![Build Android APK](https://github.com/axm88125/almanar-medical-lims/actions/workflows/android-build.yml/badge.svg)](https://github.com/axm88125/almanar-medical-lims/actions/workflows/android-build.yml)
+[![Build Android APK](https://github.com/YaqoobAlGhaithi/MedicalLabApp/actions/workflows/android-build.yml/badge.svg)](https://github.com/YaqoobAlGhaithi/MedicalLabApp/actions/workflows/android-build.yml)
 [![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](package.json)
 [![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Android%20APK-emerald.svg)](capacitor.config.ts)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)](tsconfig.json)
@@ -60,7 +60,7 @@
 ```bash
 # 1. استنساخ المستودع
 git clone <repository-url>
-cd almanar-medical-lims
+cd MedicalLabApp
 
 # 2. تثبيت الحزم والمكتبات
 npm install

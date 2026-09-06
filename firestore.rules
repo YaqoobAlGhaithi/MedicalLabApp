@@ -21,19 +21,20 @@ service cloud.firestore {
     }
 
     function isSignedIn() {
-      return request.auth != null;
+      return request.auth != null &&
+             request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    // Admin status is granted by adding the user's uid to the `admins` collection
+    // (configurable — no email is hardcoded in the rules).
     function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'axm88125@gmail.com' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      );
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Connection testing endpoint
+    // Connection testing endpoint (authenticated users only — Firestore is never public)
     match /test/{testId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow write: if false;
     }
 

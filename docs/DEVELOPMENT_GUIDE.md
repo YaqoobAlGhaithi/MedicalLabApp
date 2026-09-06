@@ -24,7 +24,7 @@
 ### الخطوة 1: استنساخ المستودع (Clone Repository)
 ```bash
 git clone <repository-url>
-cd almanar-medical-lims
+cd MedicalLabApp
 ```
 
 ### الخطوة 2: تثبيت حزم التبعيات (Install Dependencies)

@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local-only / signing material (never commit)
+android/local.properties
+*.jks
+*.keystore
+*.p12

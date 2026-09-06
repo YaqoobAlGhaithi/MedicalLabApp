@@ -11,28 +11,26 @@ import { ReportsListScreen } from './components/screens/ReportsListScreen';
 import { ReportViewScreen } from './components/screens/ReportViewScreen';
 import { SplashScreen } from './components/screens/SplashScreen';
 import { AppProvider, useApp } from './context/AppContext';
-import { useAuth } from './context/AuthContext';
 
 const ScreenRouter: React.FC = () => {
-  const { activeScreen, setActiveScreen } = useApp();
-  const { currentUser, loading } = useAuth();
+  const { activeScreen, setActiveScreen, isAuthenticated, authLoading } = useApp();
 
-  // Automatically redirect users to the LoginScreen if they are not authenticated via Firebase
+  // Redirect to LoginScreen when the user is not authenticated (Firebase or valid offline session)
   useEffect(() => {
-    if (!loading && !currentUser) {
+    if (!isAuthenticated) {
       if (activeScreen !== 'login' && activeScreen !== 'splash') {
         setActiveScreen('login');
       }
     }
-  }, [loading, currentUser, activeScreen, setActiveScreen]);
+  }, [isAuthenticated, activeScreen, setActiveScreen]);
 
-  // While checking initial Firebase auth state
-  if (loading && activeScreen === 'splash') {
+  // While checking the initial Firebase auth state
+  if (authLoading && activeScreen === 'splash') {
     return <SplashScreen />;
   }
 
-  // Ensure that protected dashboard and report screens are only accessible to logged-in users
-  if (!loading && !currentUser && activeScreen !== 'splash') {
+  // Protected screens are only accessible to authenticated users (Firebase or offline session)
+  if (!isAuthenticated && activeScreen !== 'splash') {
     return <LoginScreen />;
   }
 
@@ -59,10 +57,9 @@ const ScreenRouter: React.FC = () => {
 };
 
 const NavigationControls: React.FC = () => {
-  const { currentUser } = useAuth();
-  const { activeScreen } = useApp();
+  const { activeScreen, isAuthenticated } = useApp();
 
-  if (!currentUser || activeScreen === 'login' || activeScreen === 'splash') {
+  if (!isAuthenticated || activeScreen === 'login' || activeScreen === 'splash') {
     return null;
   }
 

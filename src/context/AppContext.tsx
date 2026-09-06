@@ -21,10 +21,13 @@ interface AppContextType {
   currentReport: LabReport | null;
   setCurrentReport: (report: LabReport | null) => void;
   isAuthenticated: boolean;
-  user: { username: string; name: string; role: string; email?: string } | null;
+  authLoading: boolean;
+  user: { uid?: string; username: string; name: string; role: string; email?: string } | null;
   firebaseUser: FirebaseUser | null;
   firebaseConnected: boolean;
-  login: (username: string) => void;
+  offlineSessionActive: boolean;
+  hasValidLocalSession: () => boolean;
+  continueOffline: () => void;
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
   addReport: (report: LabReport) => void;
@@ -49,7 +52,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { currentUser, isAuthenticated: isFirebaseAuthenticated, signInWithGoogle, logout: authLogout } = useAuth();
+  const { currentUser, loading: authLoading, isAuthenticated: isFirebaseAuthenticated, signInWithGoogle, logout: authLogout } = useAuth();
 
   const [activeScreen, setActiveScreenState] = useState<ActiveScreen>('splash');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -57,6 +60,26 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [firebaseConnected, setFirebaseConnected] = useState<boolean>(false);
+
+  /**
+   * A valid offline session must originate from a real Firebase sign-in (it carries a uid).
+   * This prevents creating a session for an arbitrary username.
+   */
+  function hasValidLocalSession(): boolean {
+    try {
+      const authFlag = localStorage.getItem('almanar_auth');
+      const savedUser = localStorage.getItem('almanar_user');
+      if (authFlag !== 'true' || !savedUser) return false;
+      const parsed = JSON.parse(savedUser);
+      return typeof parsed?.uid === 'string' && parsed.uid.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  const [offlineSessionActive, setOfflineSessionActive] = useState<boolean>(() => {
+    return hasValidLocalSession();
+  });
 
   const setActiveScreen = (screen: ActiveScreen) => {
     setActiveScreenState(screen);
@@ -93,7 +116,7 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [currentReport, setCurrentReport] = useState<LabReport | null>(null);
-  const [user, setUser] = useState<{ username: string; name: string; role: string; email?: string } | null>(() => {
+  const [user, setUser] = useState<{ uid?: string; username: string; name: string; role: string; email?: string } | null>(() => {
     const saved = localStorage.getItem('almanar_user');
     return saved ? JSON.parse(saved) : null;
   });
@@ -111,20 +134,23 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (currentUser) {
       const userData = {
+        uid: currentUser.uid,
         username: currentUser.email?.split('@')[0] || 'User',
         name: currentUser.displayName || 'أخصائي المختبر',
         role: 'Lab Specialist',
         email: currentUser.email || undefined,
       };
       setUser(userData);
+      setOfflineSessionActive(false);
       localStorage.setItem('almanar_auth', 'true');
       localStorage.setItem('almanar_user', JSON.stringify(userData));
-    } else {
+    } else if (!offlineSessionActive) {
+      // No Firebase user and no valid offline session → not authenticated.
       setUser(null);
       localStorage.setItem('almanar_auth', 'false');
       localStorage.removeItem('almanar_user');
     }
-  }, [currentUser]);
+  }, [currentUser, offlineSessionActive]);
 
   // Sync with Firestore in real-time when authenticated with Firebase
   useEffect(() => {
@@ -212,7 +238,7 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (activeScreen === 'splash') {
       const timer = setTimeout(() => {
-        if (isFirebaseAuthenticated) {
+        if (isFirebaseAuthenticated || offlineSessionActive) {
           setActiveScreen('dashboard');
         } else {
           setActiveScreen('login');
@@ -220,7 +246,7 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
       }, 2400);
       return () => clearTimeout(timer);
     }
-  }, [activeScreen, isFirebaseAuthenticated]);
+  }, [activeScreen, isFirebaseAuthenticated, offlineSessionActive]);
 
   // Persist state changes locally
   useEffect(() => {
@@ -239,18 +265,23 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('almanar_settings', JSON.stringify(settings));
   }, [settings]);
 
-  const login = (username: string) => {
-    const u = { username: username || 'admin', name: 'مدير المختبر', role: 'مدير النظام' };
-    setUser(u);
-    localStorage.setItem('almanar_auth', 'true');
-    localStorage.setItem('almanar_user', JSON.stringify(u));
+  const continueOffline = () => {
+    if (!hasValidLocalSession()) {
+      setActiveScreen('login');
+      return;
+    }
+    setOfflineSessionActive(true);
     setActiveScreen('dashboard');
   };
 
   const loginWithGoogle = async () => {
     try {
-      await signInWithGoogle();
-      setActiveScreen('dashboard');
+      const result = await signInWithGoogle();
+      // Popup flow (web) resolves with a user; the redirect flow (Capacitor native) navigates
+      // away and completes via onAuthStateChanged / resolveRedirectResult.
+      if (result) {
+        setActiveScreen('dashboard');
+      }
     } catch (err) {
       console.error('Firebase Google Login Error:', err);
       throw err;
@@ -260,6 +291,7 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     authLogout().catch(console.error);
     setUser(null);
+    setOfflineSessionActive(false);
     localStorage.setItem('almanar_auth', 'false');
     localStorage.removeItem('almanar_user');
     setActiveScreen('login');
@@ -407,11 +439,14 @@ const AppProviderInternal: React.FC<{ children: React.ReactNode }> = ({ children
         settings,
         currentReport,
         setCurrentReport,
-        isAuthenticated: isFirebaseAuthenticated,
+        isAuthenticated: isFirebaseAuthenticated || offlineSessionActive,
+        authLoading,
         user,
         firebaseUser: currentUser,
         firebaseConnected,
-        login,
+        offlineSessionActive,
+        hasValidLocalSession,
+        continueOffline,
         loginWithGoogle,
         logout,
         addReport,

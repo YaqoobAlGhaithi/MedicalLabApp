@@ -1,6 +1,6 @@
 import { onAuthStateChanged, User } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, logOutFirebase, signInWithGoogle } from '../lib/firebase';
+import { auth, logOutFirebase, resolveRedirectResult, signInWithGoogle } from '../lib/firebase';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -20,6 +20,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+    });
+
+    // Complete a redirect-based Google Sign-In (used on the Capacitor Android WebView).
+    resolveRedirectResult().catch((error) => {
+      console.error('Failed to resolve redirect sign-in:', error);
     });
 
     return () => unsubscribe();

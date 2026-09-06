@@ -6,7 +6,8 @@ import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'almanar_secure_lab_jwt_secret_key_2025';
+// JWT_SECRET is loaded exclusively from the environment. No secret is compiled into the code.
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Increase payload limit for medical report base64 PDFs and images
 app.use(express.json({ limit: '50mb' }));
@@ -52,6 +53,34 @@ function saveDatabase(db: ServerDatabase): void {
 }
 
 // ----------------------------------------------------
+// Backend users (env-driven, no hardcoded credentials)
+// ----------------------------------------------------
+interface LabUser {
+  username: string;
+  password: string;
+  name: string;
+  role: string;
+}
+
+/**
+ * Lab users are loaded exclusively from the LAB_USERS environment variable (a JSON array).
+ * No credentials are hardcoded in source code.
+ * Example value:
+ *   LAB_USERS='[{"username":"admin","password":"<strong>","name":"مدير النظام","role":"admin"}]'
+ */
+function loadLabUsers(): LabUser[] {
+  const raw = process.env.LAB_USERS;
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error('Invalid LAB_USERS environment variable:', e);
+    return [];
+  }
+}
+
+// ----------------------------------------------------
 // 1. Health & Server Info
 // ----------------------------------------------------
 app.get('/api/health', (req, res) => {
@@ -71,36 +100,39 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
 
-  // Standard laboratory specialist / admin authentication
-  if (
-    (username === 'admin' && password === 'admin123') ||
-    (username === 'specialist' && password === 'lab2025') ||
-    (username === 'dr_ahmed' && password === 'almanar2025')
-  ) {
-    const user = {
-      id: username === 'admin' ? 'usr_admin' : 'usr_spec',
-      username,
-      name: username === 'admin' ? 'د. مروان أحمد (مدير النظام)' : 'أخصائي المختبر (نظام المنار)',
-      role: username === 'admin' ? 'admin' : 'specialist',
-    };
-
-    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
-
-    return res.json({
-      success: true,
-      token,
-      user,
-      message: 'تم تسجيل الدخول بنجاح',
-    });
+  if (!JWT_SECRET) {
+    return res.status(503).json({ success: false, message: 'JWT_SECRET غير مُعرّف على الخادم (Environment Variable)' });
   }
 
-  return res.status(401).json({
-    success: false,
-    message: 'اسم المستخدم أو كلمة المرور غير صحيحة',
+  const users = loadLabUsers();
+  const found = users.find((u) => u.username === username && u.password === password);
+
+  if (!found) {
+    return res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+  }
+
+  const user = {
+    id: found.username === 'admin' ? 'usr_admin' : 'usr_spec',
+    username: found.username,
+    name: found.name,
+    role: found.role,
+  };
+
+  const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
+
+  return res.json({
+    success: true,
+    token,
+    user,
+    message: 'تم تسجيل الدخول بنجاح',
   });
 });
 
 app.get('/api/auth/verify', (req, res) => {
+  if (!JWT_SECRET) {
+    return res.status(503).json({ valid: false, message: 'JWT_SECRET غير مُعرّف على الخادم (Environment Variable)' });
+  }
+
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ valid: false, message: 'Missing or invalid token' });

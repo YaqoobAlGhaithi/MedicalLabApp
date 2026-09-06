@@ -1,12 +1,12 @@
 {
-  "projectId": "fifth-smoke-rtpfc",
-  "appId": "1:733163631510:web:0a24484defedf4808ea3b7",
-  "apiKey": "AIzaSyBTtUtjYLk_gbfjCbbc6oh0IbAl0TpxhWE",
-  "authDomain": "fifth-smoke-rtpfc.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-almanarlabreport-dcb3e18a-737c-48f5-a87f-81012574f790",
-  "storageBucket": "fifth-smoke-rtpfc.firebasestorage.app",
-  "messagingSenderId": "733163631510",
+  "projectId": "medicallabapp-d6ee0",
+  "appId": "",
+  "apiKey": "AIzaSyDNqjERpooYgI2Q2Qno4sM7BuGQhKPLuhc",
+  "authDomain": "medicallabapp-d6ee0.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "medicallabapp-d6ee0.firebasestorage.app",
+  "messagingSenderId": "204348543059",
   "measurementId": "",
-  "oAuthClientId": "733163631510-9tecee6j8s6lto3d79p4fq2amvmp4ock.apps.googleusercontent.com",
+  "oAuthClientId": "204348543059-45hh87lavodqg0eg4in0ot496dgu2nai.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }
